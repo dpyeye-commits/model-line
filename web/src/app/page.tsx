@@ -32,9 +32,13 @@ export default function HomePage() {
           <p className="text-zinc-400 text-sm">경기섬유산업연합회 · 텍스타일 디지털화 사업</p>
         </div>
         <h1 className="text-5xl font-bold leading-tight mb-6">
-          섬유소재를 디지털로,
+          <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+            섬유소재를 디지털로,
+          </span>
           <br />
-          <span className="text-zinc-400">바이어와 시장을 하나로</span>
+          <span className="bg-gradient-to-r from-cyan-400 via-emerald-400 to-lime-400 bg-clip-text text-transparent">
+            바이어와 시장을 하나로
+          </span>
         </h1>
         <p className="text-zinc-400 text-lg mb-10 max-w-xl mx-auto">
           섬유·패션 기업의 원단 소재를 디지털 컨텐츠로 제작하여
