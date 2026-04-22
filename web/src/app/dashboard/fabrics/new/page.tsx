@@ -14,7 +14,6 @@ export default async function NewFabricPage({
   const { error, brandId } = await searchParams;
   const supabase = await createClient();
 
-  // brandId가 있으면 해당 업체 정보, 없으면 내 첫 번째 브랜드
   let brand = null;
   if (brandId) {
     const { data } = await supabase.from("brands").select("id, name").eq("id", brandId).single();
@@ -30,6 +29,7 @@ export default async function NewFabricPage({
   if (!brand) redirect("/dashboard");
 
   const backHref = brandId ? `/dashboard/company/${brandId}` : "/dashboard/fabrics";
+  const action = createFabricForBrand.bind(null, brand.id, backHref);
 
   return (
     <div className="p-8 max-w-2xl">
@@ -44,12 +44,7 @@ export default async function NewFabricPage({
           <p className="text-zinc-400 text-sm mt-0.5">{brand.name}</p>
         </div>
       </div>
-      <FabricNewForm
-        error={error}
-        brandId={brand.id}
-        backHref={backHref}
-        createFabric={createFabricForBrand}
-      />
+      <FabricNewForm error={error} backHref={backHref} action={action} />
     </div>
   );
 }

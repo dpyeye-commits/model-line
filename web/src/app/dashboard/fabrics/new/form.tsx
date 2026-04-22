@@ -9,15 +9,12 @@ import Link from "next/link";
 
 interface Props {
   error?: string;
-  brandId: string;
   backHref: string;
-  createFabric: (brandId: string, backHref: string, formData: FormData) => Promise<void>;
+  action: (formData: FormData) => Promise<void>;
 }
 
-export function FabricNewForm({ error, brandId, backHref, createFabric }: Props) {
+export function FabricNewForm({ error, backHref, action }: Props) {
   const [plan, setPlan] = useState<"plan_a" | "plan_b">("plan_a");
-
-  const action = createFabric.bind(null, brandId, backHref);
 
   return (
     <form action={action} className="space-y-8">

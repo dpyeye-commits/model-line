@@ -4,11 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "../actions";
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: Promise<{ error?: string }>;
 }) {
+  const { error } = await searchParams;
   return (
     <main className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
@@ -20,9 +21,9 @@ export default function LoginPage({
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
-          {searchParams.error && (
+          {error && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-red-400 text-sm">
-              {searchParams.error}
+              {error}
             </div>
           )}
           <form action={signIn} className="space-y-4">
