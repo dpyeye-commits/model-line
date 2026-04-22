@@ -102,7 +102,7 @@ export async function getFabrics() {
 
   const { data } = await supabase
     .from("fabrics")
-    .select(`*, brands!inner(user_id)`)
+    .select(`id, name, composition, weight, finish, content_plan, swatch_url, color_map_url, normal_map_url, reflection_map_url, transparency_map_url, draping_url, virtual_mapping_url, created_at, brands!inner(user_id)`)
     .eq("brands.user_id", user.id)
     .order("created_at", { ascending: false });
   return data ?? [];
@@ -122,6 +122,8 @@ export async function createFabric(formData: FormData) {
   const weight = formData.get("weight") as string || null;
   const width = formData.get("width") as string || null;
   const finish = formData.get("finish") as string || null;
+  const notes = formData.get("notes") as string || null;
+  const content_plan = formData.get("content_plan") as string || "plan_a";
 
   const { error } = await supabase.from("fabrics").insert({
     brand_id: brand.id,
@@ -130,11 +132,23 @@ export async function createFabric(formData: FormData) {
     weight,
     width,
     finish: finish || null,
+    notes,
+    content_plan,
   });
 
   if (error) redirect(`/dashboard/fabrics/new?error=${encodeURIComponent(error.message)}`);
+
+  // 저장된 ID 가져와서 상세 페이지로 이동
+  const { data: created } = await supabase
+    .from("fabrics")
+    .select("id")
+    .eq("brand_id", brand.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
   revalidatePath("/dashboard/fabrics");
-  redirect("/dashboard/fabrics");
+  redirect(created ? `/dashboard/fabrics/${created.id}` : "/dashboard/fabrics");
 }
 
 // 소재 삭제

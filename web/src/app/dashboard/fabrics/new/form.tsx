@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/image-upload";
 import Link from "next/link";
 
@@ -13,70 +14,109 @@ interface Props {
 }
 
 export function FabricNewForm({ error, createFabric }: Props) {
-  const [swatchUrl, setSwatchUrl] = useState<string | null>(null);
+  const [plan, setPlan] = useState<"plan_a" | "plan_b">("plan_a");
 
-  // 업로드는 저장 후에 하므로 여기선 임시 미리보기만
-  async function handleSwatchUpload(fd: FormData): Promise<string> {
+  async function handlePreview(fd: FormData): Promise<string> {
     const file = fd.get("file") as File;
     return URL.createObjectURL(file);
   }
 
   return (
-    <form action={createFabric} className="space-y-6">
+    <form action={createFabric} className="space-y-8">
       {error && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-red-400 text-sm">
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <ImageUpload
-          label="스와치 이미지"
-          hint="JPG, PNG (최대 10MB)"
-          onUpload={handleSwatchUpload}
-          aspect="square"
-        />
-        <ImageUpload
-          label="디지털 맵 파일"
-          hint="PNG, PSD, TIF"
-          onUpload={handleSwatchUpload}
-          aspect="square"
-        />
+      {/* 컨텐츠 플랜 선택 */}
+      <div className="space-y-3">
+        <Label className="text-zinc-300 text-sm font-semibold">컨텐츠 제공 방안 *</Label>
+        <input type="hidden" name="content_plan" value={plan} />
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => setPlan("plan_a")}
+            className={`p-4 rounded-xl border text-left transition-all ${
+              plan === "plan_a"
+                ? "border-white bg-white/5 text-white"
+                : "border-zinc-700 text-zinc-400 hover:border-zinc-500"
+            }`}
+          >
+            <div className="font-semibold text-sm mb-1">1안</div>
+            <div className="text-xs space-y-0.5 opacity-80">
+              <div>원단 모델링 5종</div>
+              <div>디지털 라이브러리 5종</div>
+              <div>홍보영상 1종</div>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => setPlan("plan_b")}
+            className={`p-4 rounded-xl border text-left transition-all ${
+              plan === "plan_b"
+                ? "border-white bg-white/5 text-white"
+                : "border-zinc-700 text-zinc-400 hover:border-zinc-500"
+            }`}
+          >
+            <div className="font-semibold text-sm mb-1">2안</div>
+            <div className="text-xs space-y-0.5 opacity-80">
+              <div>원단 모델링 10종</div>
+              <div>디지털 라이브러리 10종</div>
+              <div>의상 모델링 1종</div>
+              <div>홍보영상 1종</div>
+            </div>
+          </button>
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <Label className="text-zinc-300">소재명 *</Label>
-        <Input name="name" placeholder="예: 면 혼방 트윌" required className="bg-zinc-900 border-zinc-700 text-white" />
+      {/* 기본 정보 */}
+      <div className="space-y-4">
+        <h3 className="text-white font-semibold text-sm border-b border-zinc-800 pb-2">기본 소재 정보</h3>
+        <div className="space-y-2">
+          <Label className="text-zinc-300">소재명 *</Label>
+          <Input name="name" placeholder="예: 면 혼방 트윌" required className="bg-zinc-900 border-zinc-700 text-white" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label className="text-zinc-300">혼방률</Label>
+            <Input name="composition" placeholder="면 80%, 폴리 20%" className="bg-zinc-900 border-zinc-700 text-white" />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-zinc-300">중량 (g/m²)</Label>
+            <Input name="weight" placeholder="180" type="number" className="bg-zinc-900 border-zinc-700 text-white" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label className="text-zinc-300">폭 (cm)</Label>
+            <Input name="width" placeholder="150" type="number" className="bg-zinc-900 border-zinc-700 text-white" />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-zinc-300">가공 방식</Label>
+            <select name="finish" className="w-full rounded-md bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm">
+              <option value="">선택</option>
+              <option>일반</option>
+              <option>발수 가공</option>
+              <option>방염 가공</option>
+              <option>항균 가공</option>
+              <option>스트레치</option>
+              <option>워싱</option>
+            </select>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-zinc-300">특이사항 / 메모</Label>
+          <Textarea name="notes" placeholder="세탁 방법, 보관 주의사항, 특수 기능 등" className="bg-zinc-900 border-zinc-700 text-white min-h-20 resize-none" />
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className="text-zinc-300">혼방률</Label>
-          <Input name="composition" placeholder="면 80%, 폴리 20%" className="bg-zinc-900 border-zinc-700 text-white" />
-        </div>
-        <div className="space-y-2">
-          <Label className="text-zinc-300">중량 (g/m²)</Label>
-          <Input name="weight" placeholder="180" type="number" className="bg-zinc-900 border-zinc-700 text-white" />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className="text-zinc-300">폭 (cm)</Label>
-          <Input name="width" placeholder="150" type="number" className="bg-zinc-900 border-zinc-700 text-white" />
-        </div>
-        <div className="space-y-2">
-          <Label className="text-zinc-300">가공 방식</Label>
-          <select name="finish" className="w-full rounded-md bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm">
-            <option value="">선택</option>
-            <option>일반</option>
-            <option>발수 가공</option>
-            <option>방염 가공</option>
-            <option>항균 가공</option>
-            <option>스트레치</option>
-            <option>워싱</option>
-          </select>
-        </div>
+      {/* 이미지 업로드 안내 */}
+      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+        <p className="text-zinc-400 text-xs leading-relaxed">
+          <span className="text-zinc-200 font-medium">📌 이미지 업로드 안내</span><br />
+          소재 저장 후 상세 페이지에서 실물 스와치·색상맵·노말맵·반사맵·투명맵·드레이핑·가상맵핑 이미지를 각각 업로드할 수 있습니다.
+        </p>
       </div>
 
       <div className="flex gap-3 pt-2">
