@@ -1,92 +1,150 @@
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Package, Shirt, Image, TrendingUp, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getMyBrand } from "./actions";
+import { CheckCircle2, Clock, AlertCircle, ChevronRight, Package, Layers } from "lucide-react";
+
+const MAP_FIELDS = [
+  "swatch_url", "color_map_url", "normal_map_url", "reflection_map_url",
+  "transparency_map_url", "draping_url", "virtual_mapping_url",
+];
+
+const planLabel: Record<string, string> = {
+  plan_a: "1안",
+  plan_b: "2안",
+};
+
+function getStatus(pct: number) {
+  if (pct === 100) return { label: "완료", color: "text-green-400", bg: "bg-green-400/10 border-green-400/30", icon: CheckCircle2 };
+  if (pct > 0)     return { label: "진행중", color: "text-amber-400", bg: "bg-amber-400/10 border-amber-400/30", icon: Clock };
+  return           { label: "미시작", color: "text-zinc-500",  bg: "bg-zinc-800 border-zinc-700", icon: AlertCircle };
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  const brand = await getMyBrand();
+  // 전체 업체 + 소재 현황
+  const { data: brands } = await supabase
+    .from("brands")
+    .select(`
+      id, name, description, content_plan, logo_url,
+      fabrics (
+        id, swatch_url, color_map_url, normal_map_url,
+        reflection_map_url, transparency_map_url, draping_url, virtual_mapping_url
+      )
+    `)
+    .order("created_at", { ascending: true });
 
-  let lineCount = 0;
-  let fabricCount = 0;
+  const allBrands = brands ?? [];
 
-  if (brand) {
-    const [{ count: lc }, { count: fc }] = await Promise.all([
-      supabase.from("product_lines").select("*", { count: "exact", head: true }).eq("brand_id", brand.id),
-      supabase.from("fabrics").select("*", { count: "exact", head: true }).eq("brand_id", brand.id),
-    ]);
-    lineCount = lc ?? 0;
-    fabricCount = fc ?? 0;
-  }
+  // 전체 통계
+  const totalFabrics = allBrands.reduce((s, b) => s + (b.fabrics?.length ?? 0), 0);
+  const completedBrands = allBrands.filter(b => {
+    if (!b.fabrics?.length) return false;
+    const avgPct = b.fabrics.reduce((s: number, f: any) => {
+      const done = MAP_FIELDS.filter(k => f[k]).length;
+      return s + (done / MAP_FIELDS.length);
+    }, 0) / b.fabrics.length;
+    return avgPct === 1;
+  }).length;
 
   const stats = [
-    { label: "제품 라인", value: String(lineCount), icon: Package, desc: "등록된 라인" },
-    { label: "소재", value: String(fabricCount), icon: Shirt, desc: "소재 라이브러리" },
-    { label: "미디어", value: "0", icon: Image, desc: "업로드된 파일" },
-    { label: "조회수", value: "0", icon: TrendingUp, desc: "이번 달" },
+    { label: "참여 업체", value: allBrands.length, sub: "총 16개사" },
+    { label: "등록 소재", value: totalFabrics, sub: "원단 샘플" },
+    { label: "완료 업체", value: completedBrands, sub: "디지털화 100%" },
+    { label: "진행률", value: `${Math.round((completedBrands / Math.max(allBrands.length, 1)) * 100)}%`, sub: "전체 완성도" },
   ];
 
   return (
     <div className="p-8">
+      {/* 헤더 */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">대시보드</h1>
-        <p className="text-zinc-400 mt-1">
-          {brand ? `${brand.name} · 브랜드 현황` : "브랜드를 설정하세요"}
-        </p>
+        <h1 className="text-2xl font-bold text-white">텍스타일 디지털화 현황</h1>
+        <p className="text-zinc-400 mt-1">경기섬유산업연합회 · 참여 업체 소재 디지털 컨텐츠 제작 현황</p>
       </div>
 
-      {!brand && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-5 mb-6 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
-          <div className="flex-1">
-            <p className="text-amber-300 font-medium text-sm">브랜드 프로필이 없습니다</p>
-            <p className="text-amber-400/70 text-sm mt-0.5">제품 라인을 등록하려면 먼저 브랜드를 설정하세요.</p>
+      {/* 통계 */}
+      <div className="grid grid-cols-4 gap-4 mb-8">
+        {stats.map(({ label, value, sub }) => (
+          <div key={label} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+            <p className="text-zinc-400 text-sm mb-1">{label}</p>
+            <p className="text-3xl font-bold text-white">{value}</p>
+            <p className="text-zinc-500 text-xs mt-1">{sub}</p>
           </div>
-          <Link href="/dashboard/brand/new">
-            <Button size="sm" className="bg-amber-500 hover:bg-amber-400 text-zinc-950 shrink-0">설정하기</Button>
-          </Link>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map(({ label, value, icon: Icon, desc }) => (
-          <Card key={label} className="bg-zinc-900 border-zinc-800 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-zinc-400 text-sm">{label}</span>
-              <Icon className="w-4 h-4 text-zinc-500" />
-            </div>
-            <div className="text-3xl font-bold text-white">{value}</div>
-            <div className="text-zinc-500 text-xs mt-1">{desc}</div>
-          </Card>
         ))}
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-        <h2 className="text-white font-semibold mb-4">빠른 시작</h2>
-        <div className="space-y-3 text-sm text-zinc-400">
-          <div className="flex items-center gap-3">
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${brand ? "bg-green-500/20 text-green-400" : "bg-zinc-800 text-white"}`}>
-              {brand ? "✓" : "1"}
-            </span>
-            {brand ? (
-              <span className="text-zinc-500 line-through">브랜드 프로필 설정</span>
-            ) : (
-              <Link href="/dashboard/brand/new" className="text-white underline">브랜드 프로필 설정하기</Link>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-xs text-white">2</span>
-            <Link href="/dashboard/products/new" className="hover:text-white transition-colors">첫 제품 라인 등록하기 →</Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-xs text-white">3</span>
-            <Link href="/dashboard/fabrics/new" className="hover:text-white transition-colors">소재 라이브러리 구성하기 →</Link>
-          </div>
-        </div>
+      {/* 업체 그리드 */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {allBrands.map((brand, idx) => {
+          const fabrics = brand.fabrics ?? [];
+          const fabricCount = fabrics.length;
+
+          const avgPct = fabricCount === 0 ? 0 :
+            Math.round(
+              fabrics.reduce((s: number, f: any) => {
+                const done = MAP_FIELDS.filter(k => f[k]).length;
+                return s + (done / MAP_FIELDS.length) * 100;
+              }, 0) / fabricCount
+            );
+
+          const status = getStatus(fabricCount === 0 ? 0 : avgPct);
+          const StatusIcon = status.icon;
+
+          return (
+            <Link key={brand.id} href={`/dashboard/company/${brand.id}`}>
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-600 transition-all hover:bg-zinc-800/50 cursor-pointer group h-full">
+                {/* 번호 + 플랜 */}
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-zinc-600 text-xs font-mono">#{String(idx + 1).padStart(2, "0")}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full border ${status.bg} ${status.color}`}>
+                    {planLabel[brand.content_plan ?? "plan_a"]}
+                  </span>
+                </div>
+
+                {/* 로고 / 아이콘 */}
+                <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center mb-3 overflow-hidden">
+                  {brand.logo_url ? (
+                    <img src={brand.logo_url} alt={brand.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Layers className="w-6 h-6 text-zinc-500" />
+                  )}
+                </div>
+
+                {/* 업체명 */}
+                <h3 className="text-white font-semibold text-sm leading-tight mb-1">{brand.name}</h3>
+                {brand.description && (
+                  <p className="text-zinc-500 text-xs mb-3 line-clamp-1">{brand.description}</p>
+                )}
+
+                {/* 소재 수 */}
+                <div className="flex items-center gap-1.5 mb-3">
+                  <Package className="w-3.5 h-3.5 text-zinc-500" />
+                  <span className="text-zinc-400 text-xs">소재 {fabricCount}종</span>
+                </div>
+
+                {/* 진행 바 */}
+                <div>
+                  <div className="flex items-center justify-between text-xs mb-1.5">
+                    <span className={`flex items-center gap-1 ${status.color}`}>
+                      <StatusIcon className="w-3 h-3" />
+                      {status.label}
+                    </span>
+                    <span className="text-zinc-500">{fabricCount === 0 ? "—" : `${avgPct}%`}</span>
+                  </div>
+                  <div className="w-full bg-zinc-800 rounded-full h-1.5">
+                    <div
+                      className={`rounded-full h-1.5 transition-all ${
+                        avgPct === 100 ? "bg-green-400" : avgPct > 0 ? "bg-amber-400" : "bg-zinc-700"
+                      }`}
+                      style={{ width: fabricCount === 0 ? "0%" : `${avgPct}%` }}
+                    />
+                  </div>
+                </div>
+
+                <ChevronRight className="w-3.5 h-3.5 text-zinc-700 group-hover:text-zinc-400 transition-colors mt-3 ml-auto" />
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
