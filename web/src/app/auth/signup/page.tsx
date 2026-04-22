@@ -71,7 +71,7 @@ export default async function SignupPage({
                 <option value="agency_manager">모델 에이전시</option>
               </select>
             </div>
-            <Button type="submit" className="w-full bg-white text-zinc-950 hover:bg-zinc-100">
+            <Button type="submit" className="w-full bg-emerald-600 text-white hover:bg-emerald-500">
               가입하기
             </Button>
           </form>

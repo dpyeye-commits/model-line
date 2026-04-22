@@ -3,12 +3,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { Building2, Globe, LogOut } from "lucide-react";
+import { Building2, Globe, LogOut, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getMyBrand } from "../actions";
 import { updateBrand, signOut } from "./actions";
 import { LogoUpload } from "./logo-upload";
 import Link from "next/link";
+import { SectionHeader, SectionTitle } from "@/components/section-header";
 
 export default async function SettingsPage({
   searchParams,
@@ -23,8 +24,7 @@ export default async function SettingsPage({
   return (
     <div className="p-8 max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">설정</h1>
-        <p className="text-zinc-400 mt-1">브랜드 프로필을 관리하세요</p>
+        <SectionHeader title="설정" subtitle="브랜드 프로필을 관리하세요" icon={Settings} color="amber" />
       </div>
 
       {saved && (
@@ -40,10 +40,7 @@ export default async function SettingsPage({
 
       {/* 브랜드 프로필 */}
       <section className="space-y-6">
-        <div className="flex items-center gap-2 mb-2">
-          <Building2 className="w-4 h-4 text-zinc-400" />
-          <h2 className="text-white font-semibold">브랜드 정보</h2>
-        </div>
+        <SectionTitle title="브랜드 정보" icon={Building2} color="emerald" />
 
         {brand ? (
           <form action={updateBrand} className="space-y-5">
@@ -71,13 +68,13 @@ export default async function SettingsPage({
                 <Input name="website" type="url" defaultValue={brand.website ?? ""} placeholder="https://brand.com" className="bg-zinc-900 border-zinc-700 text-white" />
               </div>
             </div>
-            <Button type="submit" className="bg-white text-zinc-950 hover:bg-zinc-100 w-full">프로필 저장</Button>
+            <Button type="submit" className="bg-emerald-600 text-white hover:bg-emerald-500 w-full">프로필 저장</Button>
           </form>
         ) : (
           <div className="text-center py-8">
             <p className="text-zinc-400 text-sm mb-4">브랜드가 아직 설정되지 않았습니다</p>
             <Link href="/dashboard/brand/new">
-              <Button className="bg-white text-zinc-950 hover:bg-zinc-100">브랜드 만들기</Button>
+              <Button className="bg-emerald-600 text-white hover:bg-emerald-500">브랜드 만들기</Button>
             </Link>
           </div>
         )}
@@ -87,7 +84,7 @@ export default async function SettingsPage({
 
       {/* 계정 설정 */}
       <section className="space-y-5">
-        <h2 className="text-white font-semibold">계정 설정</h2>
+        <SectionTitle title="계정 설정" icon={LogOut} color="cyan" />
         <div className="space-y-2">
           <Label className="text-zinc-300">이메일</Label>
           <Input type="email" value={user?.email ?? ""} className="bg-zinc-900 border-zinc-700 text-zinc-500" disabled readOnly />

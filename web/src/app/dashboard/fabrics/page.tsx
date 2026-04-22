@@ -1,41 +1,69 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Shirt } from "lucide-react";
-import { getFabrics } from "../actions";
+import { SectionHeader } from "@/components/section-header";
+import { createClient } from "@/lib/supabase/server";
 import { FabricCard } from "./fabric-card";
+import { FabricFilter } from "./filter";
 
-export default async function FabricsPage() {
-  const fabrics = await getFabrics();
+export default async function FabricsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ brandId?: string }>;
+}) {
+  const { brandId } = await searchParams;
+  const supabase = await createClient();
+
+  // 업체 목록
+  const { data: brands } = await supabase
+    .from("brands")
+    .select("id, name")
+    .order("name");
+
+  // 소재 목록 (업체 필터)
+  let query = supabase
+    .from("fabrics")
+    .select(`id, name, composition, weight, finish, content_plan,
+      swatch_url, color_map_url, normal_map_url, reflection_map_url,
+      transparency_map_url, draping_url, virtual_mapping_url,
+      brands(id, name)`)
+    .order("created_at", { ascending: false });
+
+  if (brandId) query = query.eq("brand_id", brandId);
+
+  const { data: fabrics } = await query;
+  const list = fabrics ?? [];
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-white">소재 라이브러리</h1>
-          <p className="text-zinc-400 mt-1">원단·소재 정보를 디지털로 관리하세요</p>
-        </div>
+      <div className="flex items-center justify-between mb-6">
+        <SectionHeader title="소재 라이브러리" subtitle={`총 ${list.length}종의 원단 소재`} icon={Shirt} color="cyan" />
         <Link href="/dashboard/fabrics/new">
-          <Button className="bg-white text-zinc-950 hover:bg-zinc-100 gap-2">
+          <Button className="bg-emerald-600 text-white hover:bg-emerald-500 gap-2">
             <Plus className="w-4 h-4" />소재 추가
           </Button>
         </Link>
       </div>
 
-      {fabrics.length === 0 ? (
-        <div className="border border-dashed border-zinc-700 rounded-xl p-16 text-center">
-          <Shirt className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <h3 className="text-white font-medium mb-2">등록된 소재가 없습니다</h3>
-          <p className="text-zinc-400 text-sm mb-6">원단 스와치와 디지털 맵 파일을 등록해보세요</p>
+      {/* 업체 필터 */}
+      <Suspense fallback={null}>
+        <FabricFilter brands={brands ?? []} selected={brandId ?? ""} />
+      </Suspense>
+
+      {list.length === 0 ? (
+        <div className="border border-dashed border-zinc-700 rounded-xl p-16 text-center mt-6">
+          <p className="text-white font-medium mb-2">등록된 소재가 없습니다</p>
           <Link href="/dashboard/fabrics/new">
-            <Button className="bg-white text-zinc-950 hover:bg-zinc-100 gap-2">
+            <Button className="bg-emerald-600 text-white hover:bg-emerald-500 gap-2 mt-4">
               <Plus className="w-4 h-4" />소재 추가
             </Button>
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {fabrics.map((fabric: any) => (
-            <FabricCard key={fabric.id} fabric={fabric} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
+          {list.map((fabric: any) => (
+            <FabricCard key={fabric.id} fabric={fabric} brandName={fabric.brands?.name} />
           ))}
         </div>
       )}

@@ -32,18 +32,19 @@ export default async function FabricDetailPage({
 
   const { data: fabric } = await supabase
     .from("fabrics")
-    .select("*")
+    .select("*, brands(id, name)")
     .eq("id", id)
     .single();
 
   if (!fabric) notFound();
 
   const completed = MAP_FIELDS.filter(f => fabric[f.field]).length;
+  const backHref = fabric.brand_id ? `/dashboard/company/${fabric.brand_id}` : "/dashboard/fabrics";
 
   return (
     <div className="p-8 max-w-4xl">
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/dashboard/fabrics">
+        <Link href={backHref}>
           <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white">
             <ArrowLeft className="w-4 h-4" />
           </Button>
@@ -56,10 +57,11 @@ export default async function FabricDetailPage({
             </Badge>
           </div>
           <p className="text-zinc-400 text-sm mt-0.5">
+            {(fabric as any).brands?.name && <span className="mr-2">{(fabric as any).brands.name} ·</span>}
             디지털 컨텐츠 완성도: {completed}/{MAP_FIELDS.length}
           </p>
         </div>
-        <form action={deleteFabric.bind(null, fabric.id)}>
+        <form action={deleteFabric.bind(null, fabric.id, fabric.brand_id ?? undefined)}>
           <button type="submit" className="text-zinc-600 hover:text-red-400 transition-colors p-2">
             <Trash2 className="w-4 h-4" />
           </button>
@@ -74,7 +76,7 @@ export default async function FabricDetailPage({
         </div>
         <div className="w-full bg-zinc-800 rounded-full h-1.5">
           <div
-            className="bg-white rounded-full h-1.5 transition-all"
+            className="bg-emerald-500 rounded-full h-1.5 transition-all"
             style={{ width: `${(completed / MAP_FIELDS.length) * 100}%` }}
           />
         </div>
@@ -82,7 +84,10 @@ export default async function FabricDetailPage({
 
       {/* 디지털 맵 업로드 */}
       <div className="space-y-4 mb-8">
-        <h2 className="text-white font-semibold">디지털 컨텐츠 업로드</h2>
+        <div className="flex items-center gap-2">
+          <div className="w-0.5 h-5 rounded-full bg-gradient-to-b from-cyan-400 to-blue-400" />
+          <h2 className="font-semibold text-white">디지털 컨텐츠 업로드</h2>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {MAP_FIELDS.map(({ field, label, hint }) => (
             <FabricMapSection
@@ -98,8 +103,11 @@ export default async function FabricDetailPage({
       </div>
 
       {/* 기본 정보 */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-        <h2 className="text-white font-semibold mb-4">소재 기본 정보</h2>
+      <div className="bg-gradient-to-br from-zinc-900 to-zinc-900/50 border border-white/5 rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-0.5 h-4 rounded-full bg-gradient-to-b from-violet-400 to-pink-400" />
+          <h2 className="font-semibold text-white">소재 기본 정보</h2>
+        </div>
         <div className="grid grid-cols-2 gap-y-3 text-sm">
           {[
             ["혼방률", fabric.composition ?? "—"],

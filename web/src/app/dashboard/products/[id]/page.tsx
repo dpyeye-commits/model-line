@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Trash2, Package, Plus, X } from "lucide-react";
+import { ArrowLeft, Trash2, Package, Plus, X, Info } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { createProduct, deleteProduct, deleteProductLine } from "./actions";
 import { ProductImageUpload } from "./product-image-upload";
+import { SectionTitle } from "@/components/section-header";
 
 const statusMap: Record<string, { label: string; className: string }> = {
   draft: { label: "초안", className: "bg-zinc-800 text-zinc-300 border-zinc-700" },
@@ -73,9 +74,9 @@ export default async function ProductLineDetailPage({
         {/* 제품 목록 */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-white font-semibold">제품 목록 ({products?.length ?? 0})</h2>
+            <SectionTitle title={`제품 목록 (${products?.length ?? 0})`} icon={Package} color="violet" />
             <Link href={`/dashboard/products/${id}?add=1`}>
-              <Button size="sm" className="bg-white text-zinc-950 hover:bg-zinc-100 gap-1">
+              <Button size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500 gap-1">
                 <Plus className="w-3.5 h-3.5" /> 제품 추가
               </Button>
             </Link>
@@ -115,7 +116,7 @@ export default async function ProductLineDetailPage({
                   <Label className="text-zinc-300 text-xs">사이즈 (쉼표로 구분)</Label>
                   <Input name="sizes" placeholder="XS, S, M, L, XL" className="bg-zinc-800 border-zinc-700 text-white text-sm h-9" />
                 </div>
-                <Button type="submit" size="sm" className="bg-white text-zinc-950 hover:bg-zinc-100 w-full">저장</Button>
+                <Button type="submit" size="sm" className="bg-emerald-600 text-white hover:bg-emerald-500 w-full">저장</Button>
               </form>
             </div>
           )}
@@ -161,7 +162,7 @@ export default async function ProductLineDetailPage({
         {/* 라인 정보 */}
         <div className="space-y-4">
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-            <h2 className="text-white font-semibold mb-4">라인 정보</h2>
+            <div className="mb-4"><SectionTitle title="라인 정보" icon={Info} color="cyan" /></div>
             <div className="space-y-2.5 text-sm">
               {[
                 ["라인명", line.name],

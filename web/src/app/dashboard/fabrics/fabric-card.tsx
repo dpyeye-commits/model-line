@@ -30,9 +30,10 @@ interface FabricCardProps {
     virtual_mapping_url?: string | null;
     [key: string]: any;
   };
+  brandName?: string;
 }
 
-export function FabricCard({ fabric }: FabricCardProps) {
+export function FabricCard({ fabric, brandName }: FabricCardProps) {
   const completed = MAP_FIELDS.filter(f => fabric[f]).length;
   const pct = Math.round((completed / MAP_FIELDS.length) * 100);
 
@@ -51,7 +52,7 @@ export function FabricCard({ fabric }: FabricCardProps) {
           <div className="flex items-start justify-between mb-2">
             <div>
               <h3 className="text-white font-medium text-sm">{fabric.name}</h3>
-              <span className="text-zinc-500 text-xs">{planLabel[fabric.content_plan ?? "plan_a"]}</span>
+              <span className="text-zinc-500 text-xs">{brandName ?? planLabel[fabric.content_plan ?? "plan_a"]}</span>
             </div>
             <ChevronRight className="w-4 h-4 text-zinc-600 mt-0.5" />
           </div>
@@ -68,7 +69,7 @@ export function FabricCard({ fabric }: FabricCardProps) {
             </div>
             <div className="w-full bg-zinc-800 rounded-full h-1">
               <div
-                className={`rounded-full h-1 transition-all ${pct === 100 ? "bg-green-400" : "bg-white"}`}
+                className={`rounded-full h-1 transition-all ${pct === 100 ? "bg-emerald-400" : "bg-emerald-600"}`}
                 style={{ width: `${pct}%` }}
               />
             </div>

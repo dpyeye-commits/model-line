@@ -51,7 +51,7 @@ export default async function LoginPage({
                 className="bg-zinc-800 border-zinc-700 text-white"
               />
             </div>
-            <Button type="submit" className="w-full bg-white text-zinc-950 hover:bg-zinc-100">
+            <Button type="submit" className="w-full bg-emerald-600 text-white hover:bg-emerald-500">
               로그인
             </Button>
           </form>

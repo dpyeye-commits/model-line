@@ -38,8 +38,10 @@ export async function createBrand(formData: FormData) {
   });
 
   if (error) redirect(`/dashboard/brand/new?error=${encodeURIComponent(error.message)}`);
+
+  const { data: created } = await supabase.from("brands").select("id").eq("user_id", user.id).single();
   revalidatePath("/dashboard");
-  redirect("/dashboard");
+  redirect(created ? `/dashboard/company/${created.id}?welcome=1` : "/dashboard");
 }
 
 // 제품 라인 목록
@@ -152,10 +154,11 @@ export async function createFabric(formData: FormData) {
 }
 
 // 소재 삭제
-export async function deleteFabric(id: string) {
+export async function deleteFabric(id: string, brandId?: string) {
   const supabase = await createClient();
   await supabase.from("fabrics").delete().eq("id", id);
   revalidatePath("/dashboard/fabrics");
+  redirect(brandId ? `/dashboard/company/${brandId}` : "/dashboard/fabrics");
 }
 
 // 시즌 목록
