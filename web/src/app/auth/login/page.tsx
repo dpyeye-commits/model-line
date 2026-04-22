@@ -2,8 +2,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { signIn } from "../actions";
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: { error?: string };
+}) {
   return (
     <main className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
@@ -15,25 +20,36 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
-          <div className="space-y-2">
-            <Label className="text-zinc-300">이메일</Label>
-            <Input
-              type="email"
-              placeholder="brand@example.com"
-              className="bg-zinc-800 border-zinc-700 text-white"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-zinc-300">비밀번호</Label>
-            <Input
-              type="password"
-              placeholder="••••••••"
-              className="bg-zinc-800 border-zinc-700 text-white"
-            />
-          </div>
-          <Button className="w-full bg-white text-zinc-950 hover:bg-zinc-100">
-            로그인
-          </Button>
+          {searchParams.error && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-red-400 text-sm">
+              {searchParams.error}
+            </div>
+          )}
+          <form action={signIn} className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-zinc-300">이메일</Label>
+              <Input
+                name="email"
+                type="email"
+                placeholder="brand@example.com"
+                required
+                className="bg-zinc-800 border-zinc-700 text-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-zinc-300">비밀번호</Label>
+              <Input
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                required
+                className="bg-zinc-800 border-zinc-700 text-white"
+              />
+            </div>
+            <Button type="submit" className="w-full bg-white text-zinc-950 hover:bg-zinc-100">
+              로그인
+            </Button>
+          </form>
         </div>
 
         <p className="text-center text-zinc-500 text-sm mt-4">
