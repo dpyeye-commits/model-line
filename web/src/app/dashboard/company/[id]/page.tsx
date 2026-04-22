@@ -66,7 +66,7 @@ export default async function CompanyDetailPage({
           </div>
           {brand.description && <p className="text-zinc-400 text-sm mt-0.5">{brand.description}</p>}
         </div>
-        <Link href={`/dashboard/fabrics/new`}>
+        <Link href={`/dashboard/fabrics/new?brandId=${id}`}>
           <Button className="bg-white text-zinc-950 hover:bg-zinc-100 gap-2">
             <Plus className="w-4 h-4" /> 소재 추가
           </Button>
@@ -93,7 +93,7 @@ export default async function CompanyDetailPage({
         <div className="border border-dashed border-zinc-700 rounded-xl p-16 text-center">
           <Layers className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
           <p className="text-white font-medium mb-2">등록된 소재가 없습니다</p>
-          <Link href="/dashboard/fabrics/new">
+          <Link href={`/dashboard/fabrics/new?brandId=${id}`}>
             <Button className="bg-white text-zinc-950 hover:bg-zinc-100 gap-2 mt-4">
               <Plus className="w-4 h-4" /> 소재 추가
             </Button>

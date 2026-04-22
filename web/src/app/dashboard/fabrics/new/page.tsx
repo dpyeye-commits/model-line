@@ -1,35 +1,55 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
-import { createFabric, getMyBrand } from "../../actions";
 import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { FabricNewForm } from "./form";
+import { createFabricForBrand } from "./actions";
 
 export default async function NewFabricPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; brandId?: string }>;
 }) {
-  const { error } = await searchParams;
-  const brand = await getMyBrand();
-  if (!brand) redirect("/dashboard/brand/new");
+  const { error, brandId } = await searchParams;
+  const supabase = await createClient();
+
+  // brandId가 있으면 해당 업체 정보, 없으면 내 첫 번째 브랜드
+  let brand = null;
+  if (brandId) {
+    const { data } = await supabase.from("brands").select("id, name").eq("id", brandId).single();
+    brand = data;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase.from("brands").select("id, name").eq("user_id", user.id).limit(1).single();
+      brand = data;
+    }
+  }
+
+  if (!brand) redirect("/dashboard");
+
+  const backHref = brandId ? `/dashboard/company/${brandId}` : "/dashboard/fabrics";
 
   return (
     <div className="p-8 max-w-2xl">
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/dashboard/fabrics">
+        <Link href={backHref}>
           <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white">
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-white">소재 추가</h1>
-          <p className="text-zinc-400 text-sm mt-0.5">원단·소재 정보를 등록하세요</p>
+          <p className="text-zinc-400 text-sm mt-0.5">{brand.name}</p>
         </div>
       </div>
-      <FabricNewForm error={error} createFabric={createFabric} />
+      <FabricNewForm
+        error={error}
+        brandId={brand.id}
+        backHref={backHref}
+        createFabric={createFabricForBrand}
+      />
     </div>
   );
 }

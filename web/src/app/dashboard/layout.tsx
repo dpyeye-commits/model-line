@@ -1,44 +1,63 @@
 import Link from "next/link";
-import { LayoutDashboard, Package, Shirt, BookOpen, Settings } from "lucide-react";
+import { LayoutDashboard, Package, Shirt, BookOpen, Settings, Building2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { NavLink } from "./nav-link";
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "대시보드" },
-  { href: "/dashboard/products", icon: Package, label: "제품 라인" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "업체 현황판", exact: true },
   { href: "/dashboard/fabrics", icon: Shirt, label: "소재 라이브러리" },
+  { href: "/dashboard/products", icon: Package, label: "제품 라인" },
   { href: "/dashboard/catalog", icon: BookOpen, label: "카탈로그" },
   { href: "/dashboard/settings", icon: Settings, label: "설정" },
 ];
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("role, full_name").eq("id", user.id).single()
+    : { data: null };
+
   return (
     <div className="min-h-screen bg-zinc-950 flex">
-      {/* 사이드바 */}
-      <aside className="w-60 border-r border-zinc-800 flex flex-col">
+      <aside className="w-60 border-r border-zinc-800 flex flex-col shrink-0">
+        {/* 로고 */}
         <div className="px-6 py-5 border-b border-zinc-800">
-          <span className="text-lg font-bold text-white">Model Line</span>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
+              <Building2 className="w-4 h-4 text-zinc-950" />
+            </div>
+            <span className="text-base font-bold text-white">Model Line</span>
+          </div>
+          <p className="text-zinc-600 text-xs mt-1">경기섬유산업연합회</p>
         </div>
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {navItems.map(({ href, icon: Icon, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors text-sm"
-            >
-              <Icon className="w-4 h-4" />
-              {label}
-            </Link>
+
+        {/* 네비 */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5">
+          {navItems.map((item) => (
+            <NavLink key={item.href} {...item} />
           ))}
         </nav>
-        <div className="px-3 py-4 border-t border-zinc-800">
-          <div className="px-3 py-2 text-xs text-zinc-500">브랜드명</div>
+
+        {/* 유저 정보 */}
+        <div className="px-4 py-4 border-t border-zinc-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center shrink-0">
+              <span className="text-xs text-white font-medium">
+                {(profile?.full_name ?? user?.email ?? "?")[0].toUpperCase()}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-white text-xs font-medium truncate">
+                {profile?.full_name ?? "관리자"}
+              </p>
+              <p className="text-zinc-500 text-xs truncate">{user?.email ?? ""}</p>
+            </div>
+          </div>
         </div>
       </aside>
 
-      {/* 메인 콘텐츠 */}
       <main className="flex-1 overflow-auto">{children}</main>
     </div>
   );
