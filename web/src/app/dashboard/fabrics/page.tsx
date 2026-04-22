@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, Shirt } from "lucide-react";
 import { getFabrics } from "../actions";
+import { FabricCard } from "./fabric-card";
 
 export default async function FabricsPage() {
   const fabrics = await getFabrics();
@@ -34,27 +35,7 @@ export default async function FabricsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {fabrics.map((fabric: any) => (
-            <div key={fabric.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-600 transition-colors">
-              <div className="w-full h-32 bg-zinc-800 rounded-lg mb-4 flex items-center justify-center">
-                {fabric.swatch_url ? (
-                  <img src={fabric.swatch_url} alt={fabric.name} className="w-full h-full object-cover rounded-lg" />
-                ) : (
-                  <Shirt className="w-8 h-8 text-zinc-600" />
-                )}
-              </div>
-              <h3 className="text-white font-medium">{fabric.name}</h3>
-              <div className="mt-2 space-y-1">
-                {fabric.composition && (
-                  <p className="text-zinc-400 text-xs">혼방률: {fabric.composition}</p>
-                )}
-                {fabric.weight && (
-                  <p className="text-zinc-400 text-xs">중량: {fabric.weight} g/m²</p>
-                )}
-                {fabric.finish && (
-                  <p className="text-zinc-400 text-xs">가공: {fabric.finish}</p>
-                )}
-              </div>
-            </div>
+            <FabricCard key={fabric.id} fabric={fabric} />
           ))}
         </div>
       )}

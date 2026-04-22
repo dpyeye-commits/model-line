@@ -7,6 +7,7 @@ import { ArrowLeft, Trash2, Package, Plus, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { createProduct, deleteProduct, deleteProductLine } from "./actions";
+import { ProductImageUpload } from "./product-image-upload";
 
 const statusMap: Record<string, { label: string; className: string }> = {
   draft: { label: "초안", className: "bg-zinc-800 text-zinc-300 border-zinc-700" },
@@ -35,7 +36,7 @@ export default async function ProductLineDetailPage({
 
   const { data: products } = await supabase
     .from("products")
-    .select("*")
+    .select("*, product_media(url, is_primary)")
     .eq("line_id", id)
     .order("created_at", { ascending: false });
 
@@ -126,28 +127,33 @@ export default async function ProductLineDetailPage({
             </div>
           ) : (
             <div className="space-y-2">
-              {products.map((product: any) => (
-                <div key={product.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-white font-medium text-sm">{product.name}</span>
-                      {product.sku && <span className="text-zinc-500 text-xs">{product.sku}</span>}
+              {products.map((product: any) => {
+                const primaryImg = product.product_media?.find((m: any) => m.is_primary)?.url
+                  ?? product.product_media?.[0]?.url ?? null;
+                return (
+                  <div key={product.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center gap-4 group">
+                    <ProductImageUpload productId={product.id} lineId={id} currentUrl={primaryImg} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-medium text-sm">{product.name}</span>
+                        {product.sku && <span className="text-zinc-500 text-xs">{product.sku}</span>}
+                      </div>
+                      <div className="flex items-center gap-3 mt-1">
+                        {product.fabric_info && <span className="text-zinc-400 text-xs">{product.fabric_info}</span>}
+                        {product.price && <span className="text-zinc-400 text-xs">{product.price.toLocaleString()}원</span>}
+                        {product.sizes && (
+                          <span className="text-zinc-400 text-xs">{(product.sizes as string[]).join(" · ")}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 mt-1">
-                      {product.fabric_info && <span className="text-zinc-400 text-xs">{product.fabric_info}</span>}
-                      {product.price && <span className="text-zinc-400 text-xs">{product.price.toLocaleString()}원</span>}
-                      {product.sizes && (
-                        <span className="text-zinc-400 text-xs">{(product.sizes as string[]).join(" · ")}</span>
-                      )}
-                    </div>
+                    <form action={deleteProduct.bind(null, product.id, id)}>
+                      <button type="submit" className="text-zinc-600 hover:text-red-400 transition-colors p-1 opacity-0 group-hover:opacity-100">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </form>
                   </div>
-                  <form action={deleteProduct.bind(null, product.id, id)}>
-                    <button type="submit" className="text-zinc-600 hover:text-red-400 transition-colors p-1">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </form>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

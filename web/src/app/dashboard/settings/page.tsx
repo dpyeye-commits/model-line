@@ -7,6 +7,7 @@ import { Building2, Globe, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getMyBrand } from "../actions";
 import { updateBrand, signOut } from "./actions";
+import { LogoUpload } from "./logo-upload";
 import Link from "next/link";
 
 export default async function SettingsPage({
@@ -46,6 +47,7 @@ export default async function SettingsPage({
 
         {brand ? (
           <form action={updateBrand} className="space-y-5">
+            <LogoUpload brandId={brand.id} currentLogoUrl={brand.logo_url} />
             <div className="space-y-2">
               <Label className="text-zinc-300">브랜드명 *</Label>
               <Input name="name" defaultValue={brand.name} required className="bg-zinc-900 border-zinc-700 text-white" />
