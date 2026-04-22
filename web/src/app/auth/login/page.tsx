@@ -14,10 +14,14 @@ export default async function LoginPage({
     <main className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold text-white">
-            Model Line
+          <Link href="/" className="inline-flex flex-col items-center gap-2">
+            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
+              <span className="text-zinc-950 font-black text-xl leading-none">경</span>
+            </div>
+            <span className="text-white font-bold text-lg">경기섬유산업연합회</span>
           </Link>
-          <p className="text-zinc-400 mt-2">계정에 로그인하세요</p>
+          <p className="text-zinc-500 text-sm mt-1">텍스타일 디지털화 플랫폼</p>
+          <p className="text-zinc-400 mt-3">관리자 계정으로 로그인하세요</p>
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
