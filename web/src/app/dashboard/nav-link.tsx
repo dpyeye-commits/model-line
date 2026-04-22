@@ -2,18 +2,27 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { LucideIcon } from "lucide-react";
+import { LayoutDashboard, Shirt, Package, BookOpen, Settings } from "lucide-react";
+
+const icons: Record<string, React.ElementType> = {
+  dashboard: LayoutDashboard,
+  fabrics: Shirt,
+  products: Package,
+  catalog: BookOpen,
+  settings: Settings,
+};
 
 interface NavLinkProps {
   href: string;
-  icon: LucideIcon;
+  iconKey: string;
   label: string;
   exact?: boolean;
 }
 
-export function NavLink({ href, icon: Icon, label, exact }: NavLinkProps) {
+export function NavLink({ href, iconKey, label, exact }: NavLinkProps) {
   const pathname = usePathname();
   const active = exact ? pathname === href : pathname.startsWith(href);
+  const Icon = icons[iconKey] ?? LayoutDashboard;
 
   return (
     <Link

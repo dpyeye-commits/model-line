@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { LayoutDashboard, Package, Shirt, BookOpen, Settings, Building2 } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { NavLink } from "./nav-link";
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "업체 현황판", exact: true },
-  { href: "/dashboard/fabrics", icon: Shirt, label: "소재 라이브러리" },
-  { href: "/dashboard/products", icon: Package, label: "제품 라인" },
-  { href: "/dashboard/catalog", icon: BookOpen, label: "카탈로그" },
-  { href: "/dashboard/settings", icon: Settings, label: "설정" },
+  { href: "/dashboard",          iconKey: "dashboard", label: "업체 현황판",    exact: true },
+  { href: "/dashboard/fabrics",  iconKey: "fabrics",   label: "소재 라이브러리" },
+  { href: "/dashboard/products", iconKey: "products",  label: "제품 라인" },
+  { href: "/dashboard/catalog",  iconKey: "catalog",   label: "카탈로그" },
+  { href: "/dashboard/settings", iconKey: "settings",  label: "설정" },
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -22,7 +22,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="min-h-screen bg-zinc-950 flex">
       <aside className="w-60 border-r border-zinc-800 flex flex-col shrink-0">
-        {/* 로고 */}
         <div className="px-6 py-5 border-b border-zinc-800">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
@@ -33,14 +32,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <p className="text-zinc-600 text-xs mt-1">경기섬유산업연합회</p>
         </div>
 
-        {/* 네비 */}
         <nav className="flex-1 px-3 py-4 space-y-0.5">
           {navItems.map((item) => (
             <NavLink key={item.href} {...item} />
           ))}
         </nav>
 
-        {/* 유저 정보 */}
         <div className="px-4 py-4 border-t border-zinc-800">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center shrink-0">
@@ -49,9 +46,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               </span>
             </div>
             <div className="min-w-0">
-              <p className="text-white text-xs font-medium truncate">
-                {profile?.full_name ?? "관리자"}
-              </p>
+              <p className="text-white text-xs font-medium truncate">{profile?.full_name ?? "관리자"}</p>
               <p className="text-zinc-500 text-xs truncate">{user?.email ?? ""}</p>
             </div>
           </div>
